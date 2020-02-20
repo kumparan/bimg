@@ -444,8 +444,7 @@ vips_watermark(VipsImage *in, VipsImage **out, WatermarkTextOptions *to, Waterma
 			NULL) ||
 		vips_linear1(t[1], &t[2], o->Opacity, 0.0, NULL) ||
 		vips_cast(t[2], &t[3], VIPS_FORMAT_UCHAR, NULL) ||
-		vips_embed(t[3], &t[4], o->Left, o->Top, t[3]->Xsize + o->Margin + o->Left, t[3]->Ysize +
-    o->Margin +  o->Top, NULL)
+		vips_embed(t[3], &t[4], o->Left, o->Top, t[3]->Xsize + o->Margin + o->Left, t[3]->Ysize + o->Margin +  o->Top, NULL)
 		) {
 		g_object_unref(base);
 		return 1;
