@@ -184,7 +184,7 @@ vips_type_find_save_bridge(int t) {
 		return vips_type_find("VipsOperation", "jpegsave_buffer");
 	}
 	if (t == GIF) {
-		return vips_type_find("VipsOperation", "gifsave_buffer");
+		return vips_type_find("VipsOperation", "magicksave_buffer");
 	}
 #if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 8))
 	if (t == HEIF) {
@@ -351,6 +351,15 @@ vips_heifsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int qual
 		"lossless", INT_TO_GBOOLEAN(lossless),
 		NULL
 	);
+#else
+	return 0;
+#endif
+}
+
+int
+vips_magicksave_bridge(VipsImage *in, void **buf, size_t *len) {
+#if (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 5)
+	return vips_magicksave_buffer(in, buf, len, NULL);
 #else
 	return 0;
 #endif
