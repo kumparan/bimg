@@ -183,6 +183,9 @@ vips_type_find_save_bridge(int t) {
 	if (t == JPEG) {
 		return vips_type_find("VipsOperation", "jpegsave_buffer");
 	}
+	if (t == GIF) {
+		return vips_type_find("VipsOperation", "gifsave_buffer")
+	}
 #if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 8))
 	if (t == HEIF) {
 		return vips_type_find("VipsOperation", "heifsave_buffer");
