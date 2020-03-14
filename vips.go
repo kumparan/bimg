@@ -444,7 +444,7 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 	case HEIF:
 		saveErr = C.vips_heifsave_bridge(tmpImage, &ptr, &length, strip, quality, lossless)
 	case GIF:
-		saveErr = C.vips_magicksave_bridge(tmpImage, &ptr, &length)
+		saveErr = C.vips_gifsave_bridge(tmpImage, &ptr, &length)
 	default:
 		saveErr = C.vips_jpegsave_bridge(tmpImage, &ptr, &length, strip, quality, interlace)
 	}
