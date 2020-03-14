@@ -396,10 +396,10 @@ int vips_heifsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int 
 int vips_gifsave_bridge(VipsImage *in, void **buf, size_t *len)
 {
 #if (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 5)
-	return vips_magicksave_buffer(in, buf, len, 
+	return vips_magicksave_buffer(in, buf, len,
 								  "format", "GIF",
 								  "optimize_gif_frames", INT_TO_GBOOLEAN(0),
-								   NULL);
+								  NULL);
 #else
 	return 0;
 #endif
@@ -452,7 +452,7 @@ int vips_init_image(void *buf, size_t len, int imageType, VipsImage **out)
 	}
 	else if (imageType == GIF)
 	{
-		code = vips_magickload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+		code = vips_gifload_buffer(buf, len, out, "n", -1, "access", VIPS_ACCESS_RANDOM, NULL);
 	}
 	else if (imageType == PDF)
 	{
