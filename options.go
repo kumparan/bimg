@@ -8,7 +8,7 @@ import "C"
 
 const (
 	// Quality defines the default JPEG quality to be used.
-	Quality = 80
+	Quality = 75
 	// MaxSize defines the maximum pixels width or height supported.
 	MaxSize = 16383
 )
@@ -62,11 +62,11 @@ type Angle int
 const (
 	// D0 represents the rotation angle 0 degrees.
 	D0 Angle = 0
-	// D45 represents the rotation angle 90 degrees.
+	// D45 represents the rotation angle 45 degrees.
 	D45 Angle = 45
 	// D90 represents the rotation angle 90 degrees.
 	D90 Angle = 90
-	// D135 represents the rotation angle 90 degrees.
+	// D135 represents the rotation angle 135 degrees.
 	D135 Angle = 135
 	// D180 represents the rotation angle 180 degrees.
 	D180 Angle = 180
@@ -74,7 +74,7 @@ const (
 	D235 Angle = 235
 	// D270 represents the rotation angle 270 degrees.
 	D270 Angle = 270
-	// D315 represents the rotation angle 180 degrees.
+	// D315 represents the rotation angle 315 degrees.
 	D315 Angle = 315
 )
 
@@ -89,7 +89,7 @@ const (
 )
 
 // Interpretation represents the image interpretation type.
-// See: https://jcupitt.github.io/libvips/API/current/VipsImage.html#VipsInterpretation
+// See: https://libvips.github.io/libvips/API/current/VipsImage.html#VipsInterpretation
 type Interpretation int
 
 const (
@@ -119,7 +119,7 @@ const (
 
 // Extend represents the image extend mode, used when the edges
 // of an image are extended, you can specify how you want the extension done.
-// See: https://jcupitt.github.io/libvips/API/current/libvips-conversion.html#VIPS-EXTEND-BACKGROUND:CAPS
+// See: https://libvips.github.io/libvips/API/current/libvips-conversion.html#VIPS-EXTEND-BACKGROUND:CAPS
 type Extend int
 
 const (
@@ -226,4 +226,11 @@ type Options struct {
 	Threshold      float64
 	Gamma          float64
 	OutputICC      string
+	InputICC       string
+	Palette        bool
+	// Speed defines the AVIF encoders CPU effort. Valid values are 0-8.
+	Speed int
+
+	// private fields
+	autoRotateOnly bool
 }
