@@ -117,7 +117,7 @@ vips_jpegload_buffer_shrink(void *buf, size_t len, VipsImage **out, int shrink) 
 
 int
 vips_webpload_buffer_shrink(void *buf, size_t len, VipsImage **out, int shrink) {
-	return vips_webpload_buffer(buf, len, out, "shrink", shrink, NULL);
+	return vips_webpload_buffer(buf, len, out, "n", -1,  "shrink", shrink, NULL);
 }
 
 int
@@ -441,7 +441,7 @@ vips_init_image (void *buf, size_t len, int imageType, VipsImage **out) {
 	} else if (imageType == PNG) {
 		code = vips_pngload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 	} else if (imageType == WEBP) {
-		code = vips_webpload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+		code = vips_webpload_buffer(buf, len, out, "n", -1, "access", VIPS_ACCESS_RANDOM, NULL);
 	} else if (imageType == TIFF) {
 		code = vips_tiffload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 #if (VIPS_MAJOR_VERSION >= 8)
