@@ -207,6 +207,9 @@ func VipsIsTypeSupported(t ImageType) bool {
 	if t == AVIF {
 		return int(C.vips_type_find_bridge(C.HEIF)) != 0
 	}
+	if t == JXL {
+		return int(C.vips_type_find_bridge(C.JXL)) != 0
+	}
 	return false
 }
 
@@ -231,6 +234,12 @@ func VipsIsTypeSupportedSave(t ImageType) bool {
 	}
 	if t == AVIF {
 		return int(C.vips_type_find_save_bridge(C.HEIF)) != 0
+	}
+	if t == GIF {
+		return int(C.vips_type_find_save_bridge(C.GIF)) != 0
+	}
+	if t == JXL {
+		return int(C.vips_type_find_save_bridge(C.JXL)) != 0
 	}
 	return false
 }
@@ -518,13 +527,17 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 	case WEBP:
 		saveErr = C.vips_webpsave_bridge(tmpImage, &ptr, &length, strip, quality, lossless)
 	case PNG:
-		saveErr = C.vips_pngsave_bridge(tmpImage, &ptr, &length, strip, C.int(o.Compression), quality, interlace, palette)
+		saveErr = C.vips_pngsave_bridge(tmpImage, &ptr, &length, strip, C.int(o.Compression), quality, interlace, palette, speed)
 	case TIFF:
 		saveErr = C.vips_tiffsave_bridge(tmpImage, &ptr, &length)
 	case HEIF:
 		saveErr = C.vips_heifsave_bridge(tmpImage, &ptr, &length, strip, quality, lossless)
 	case AVIF:
 		saveErr = C.vips_avifsave_bridge(tmpImage, &ptr, &length, strip, quality, lossless, speed)
+	case GIF:
+		saveErr = C.vips_gifsave_bridge(tmpImage, &ptr, &length, strip)
+	case JXL:
+		saveErr = C.vips_jxlsave_bridge(tmpImage, &ptr, &length, strip, quality, lossless)
 	default:
 		saveErr = C.vips_jpegsave_bridge(tmpImage, &ptr, &length, strip, quality, interlace)
 	}
@@ -565,7 +578,7 @@ func vipsExtract(image *C.VipsImage, left, top, width, height int) (*C.VipsImage
 	var buf *C.VipsImage
 	defer C.g_object_unref(C.gpointer(image))
 
-	if width > MaxSize || height > MaxSize {
+	if width > maxSize || height > maxSize {
 		return nil, errors.New("Maximum image size exceeded")
 	}
 
@@ -582,7 +595,7 @@ func vipsSmartCrop(image *C.VipsImage, width, height int) (*C.VipsImage, error) 
 	var buf *C.VipsImage
 	defer C.g_object_unref(C.gpointer(image))
 
-	if width > MaxSize || height > MaxSize {
+	if width > maxSize || height > maxSize {
 		return nil, errors.New("Maximum image size exceeded")
 	}
 
@@ -763,6 +776,16 @@ func vipsImageType(buf []byte) ImageType {
 		buf[8] == 0x61 && buf[9] == 0x76 && buf[10] == 0x69 && buf[11] == 0x66 {
 		return AVIF
 	}
+	if IsTypeSupported(JXL) && buf[0] == 0xFF && buf[1] == 0x0A {
+		// This is naked jxl file header
+		return JXL
+	}
+	if IsTypeSupported(JXL) && buf[0] == 0x0 && buf[1] == 0x0 && buf[2] == 0x0 && buf[3] == 0x0C &&
+		buf[4] == 0x4A && buf[5] == 0x58 && buf[6] == 0x4C && buf[7] == 0x20 &&
+		buf[8] == 0x0D && buf[9] == 0x0A && buf[10] == 0x87 && buf[11] == 0x0A {
+		// This is an ISOBMFF-based container
+		return JXL
+	}
 
 	return UNKNOWN
 }
@@ -838,6 +861,28 @@ func vipsGamma(image *C.VipsImage, Gamma float64) (*C.VipsImage, error) {
 	defer C.g_object_unref(C.gpointer(image))
 
 	err := C.vips_gamma_bridge(image, &out, C.double(Gamma))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return out, nil
+}
+
+func vipsBrightness(image *C.VipsImage, brightness float64) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(image))
+
+	err := C.vips_brightness_bridge(image, &out, C.double(brightness))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return out, nil
+}
+
+func vipsContrast(image *C.VipsImage, contrast float64) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(image))
+
+	err := C.vips_contrast_bridge(image, &out, C.double(contrast))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
