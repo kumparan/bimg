@@ -1,5 +1,6 @@
 package bimg
 
+import "C"
 import (
 	"fmt"
 	"regexp"
@@ -161,6 +162,11 @@ func IsTypeSupportedSave(t ImageType) bool {
 	fmt.Println("ok", ok)
 	fmt.Println(IsImageTypeSupportedByVips(t))
 	fmt.Println(IsImageTypeSupportedByVips(t).Save)
+
+	fmt.Println("VipsVersion", VipsVersion)
+	fmt.Println("VipsMajorVersion", VipsMajorVersion)
+	fmt.Println("VipsVersion", VipsMinorVersion)
+
 	return ok && IsImageTypeSupportedByVips(t).Save
 }
 
