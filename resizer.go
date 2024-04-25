@@ -32,7 +32,6 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 
 	// Ensure supported type
 	if !IsTypeSupportedSave(o.Type) {
-		fmt.Println("image type is unsupported: ", o.Type)
 		return nil, errors.New("Unsupported image output type")
 	}
 

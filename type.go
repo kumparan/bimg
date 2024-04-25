@@ -2,7 +2,6 @@ package bimg
 
 import "C"
 import (
-	"fmt"
 	"regexp"
 	"sync"
 	"unicode/utf8"
@@ -159,14 +158,6 @@ func IsTypeNameSupported(t string) bool {
 // IsTypeSupportedSave checks if a given image type is support for saving
 func IsTypeSupportedSave(t ImageType) bool {
 	_, ok := ImageTypes[t]
-	fmt.Println("ok", ok)
-	fmt.Println(IsImageTypeSupportedByVips(t))
-	fmt.Println(IsImageTypeSupportedByVips(t).Save)
-
-	fmt.Println("VipsVersion", VipsVersion)
-	fmt.Println("VipsMajorVersion", VipsMajorVersion)
-	fmt.Println("VipsVersion", VipsMinorVersion)
-
 	return ok && IsImageTypeSupportedByVips(t).Save
 }
 
