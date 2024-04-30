@@ -35,7 +35,8 @@ enum types {
 	SVG,
 	MAGICK,
 	HEIF,
-	AVIF
+	AVIF,
+	JXL
 };
 
 typedef struct {
@@ -44,7 +45,7 @@ typedef struct {
 } WatermarkTextOptions;
 
 typedef struct {
-	int    Left;
+    int    Left;
 	int    Top;
 	int    Width;
 	int    DPI;
@@ -166,6 +167,11 @@ vips_type_find_bridge(int t) {
 		return vips_type_find("VipsOperation", "heifload");
 	}
 #endif
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 11))
+	if (t == JXL) {
+		return vips_type_find("VipsOperation", "jxlload");
+	}
+#endif
 	return 0;
 }
 
@@ -186,6 +192,16 @@ vips_type_find_save_bridge(int t) {
 #if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 8))
 	if (t == HEIF) {
 		return vips_type_find("VipsOperation", "heifsave_buffer");
+	}
+#endif
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 11))
+    if (t == JXL) {
+		return vips_type_find("VipsOperation", "jxlsave_buffer");
+	}
+#endif
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 12))
+	if (t == GIF) {
+		return vips_type_find("VipsOperation", "gifsave_buffer");
 	}
 #endif
 	return 0;
@@ -332,8 +348,20 @@ vips_jpegsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int qual
 }
 
 int
-vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compression, int quality, int interlace, int palette) {
-#if (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 7)
+vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compression, int quality, int interlace, int palette, int speed) {
+#if (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 12)
+	int effort = 10 - speed;
+	return vips_pngsave_buffer(in, buf, len,
+		"strip", INT_TO_GBOOLEAN(strip),
+		"compression", compression,
+		"interlace", INT_TO_GBOOLEAN(interlace),
+		"filter", VIPS_FOREIGN_PNG_FILTER_ALL,
+		"palette", INT_TO_GBOOLEAN(palette),
+		"Q", quality,
+		"effort", effort,
+		NULL
+	);
+#elif (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 7)
 	return vips_pngsave_buffer(in, buf, len,
 		"strip", INT_TO_GBOOLEAN(strip),
 		"compression", compression,
@@ -409,6 +437,31 @@ vips_heifsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int qual
 #endif
 }
 
+int vips_jxlsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int lossless) {
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 11))
+    return vips_jxlsave_buffer(in, buf, len,
+    	"strip", INT_TO_GBOOLEAN(strip),
+    	"Q", quality,
+        "lossless", INT_TO_GBOOLEAN(lossless),
+        NULL
+    );
+#else
+	return 0;
+#endif
+}
+
+int
+vips_gifsave_bridge(VipsImage *in, void **buf, size_t *len, int strip) {
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 12))
+	return vips_gifsave_buffer(in, buf, len,
+		"strip", INT_TO_GBOOLEAN(strip),
+		NULL
+	);
+#else
+	return 0;
+#endif
+}
+
 int
 vips_is_16bit (VipsInterpretation interpretation) {
 	return interpretation == VIPS_INTERPRETATION_RGB16 || interpretation == VIPS_INTERPRETATION_GREY16;
@@ -463,6 +516,10 @@ vips_init_image (void *buf, size_t len, int imageType, VipsImage **out) {
 #if (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 9)
 	} else if (imageType == AVIF) {
 		code = vips_heifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+#endif
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 11))
+	} else if (imageType == JXL) {
+		code = vips_jxlload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 #endif
 	}
 
@@ -658,4 +715,14 @@ int vips_find_trim_bridge(VipsImage *in, int *top, int *left, int *width, int *h
 int vips_gamma_bridge(VipsImage *in, VipsImage **out, double exponent)
 {
   return vips_gamma(in, out, "exponent", 1.0 / exponent, NULL);
+}
+
+int vips_brightness_bridge(VipsImage *in, VipsImage **out, double k)
+{
+    return vips_linear1(in, out, 1.0 , k, NULL);
+}
+
+int vips_contrast_bridge(VipsImage *in, VipsImage **out, double k)
+{
+    return vips_linear1(in, out, k , 0.0, NULL);
 }
